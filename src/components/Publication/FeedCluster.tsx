@@ -6,21 +6,25 @@ import ConversationThread from './ConversationThread';
 import TweetEmbed from './TweetEmbed';
 import InterpellationCarousel from './InterpellationCarousel';
 import MediaCarousel from './MediaCarousel';
+import DebateEventCard from './DebateEventCard';
 import { PoliticianTweet } from '@/data/mockTweets';
+import { DebateEvent } from '@/data/mockDebateEvents';
 import { Search } from 'lucide-react';
 import { triggerHaptic } from '@/utils/haptics';
 
-// ─── Feed item types (now includes tweets) ───
+// ─── Feed item types (now includes tweets and events) ───
 type FeedItem =
     | { type: 'standalone'; publication: Publication }
     | { type: 'thread'; origin: Publication; replies: Publication[] }
-    | { type: 'tweet'; tweet: PoliticianTweet };
+    | { type: 'tweet'; tweet: PoliticianTweet }
+    | { type: 'event'; event: DebateEvent };
 
 interface FeedClusterProps {
     tag: string;
     publications: Publication[];
     news: any[];
     tweets: PoliticianTweet[];
+    events?: DebateEvent[];
     isTrending: boolean;
     isFavorite: boolean;
     onSupport: (id: string) => void;
@@ -44,13 +48,14 @@ function shuffleItems(items: FeedItem[], seed: number): FeedItem[] {
 }
 
 /**
- * Build all feed items from publications, news, and tweets.
+ * Build all feed items from publications, news, tweets, and events.
  * Threads are detected, then everything is shuffled together.
  */
 function buildFeedItems(
     publications: Publication[],
     news: any[],
     tweets: PoliticianTweet[],
+    events: DebateEvent[],
     tag: string,
 ): FeedItem[] {
     const pubMap = new Map(publications.map(p => [p.id, p]));
@@ -77,6 +82,11 @@ function buildFeedItems(
         items.push({ type: 'tweet', tweet });
     });
 
+    // 3. Add debate events
+    events.forEach(event => {
+        items.push({ type: 'event', event });
+    });
+
     // 4. Add standalone publications (not part of threads)
     for (const pub of publications) {
         if (!usedInThread.has(pub.id)) {
@@ -94,6 +104,7 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
     publications,
     news,
     tweets,
+    events = [],
     isTrending,
     onSupport,
     onReaction,
@@ -103,8 +114,8 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
     const [expanded, setExpanded] = useState(false);
 
     const feedItems = useMemo(
-        () => buildFeedItems(publications, news, tweets, tag),
-        [publications, news, tweets, tag]
+        () => buildFeedItems(publications, news, tweets, events, tag),
+        [publications, news, tweets, events, tag]
     );
 
     // Randomized 2-4 items in collapsed state (seeded on tag for consistency)
@@ -144,6 +155,8 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
             <div className="space-y-3">
                 {visibleItems.map((item, idx) => {
                     switch (item.type) {
+                        case 'event':
+                            return <DebateEventCard key={`event-${item.event.id}`} event={item.event} />;
                         case 'tweet':
                             return <TweetEmbed key={`tweet-${item.tweet.id}`} tweet={item.tweet} />;
                         case 'thread':

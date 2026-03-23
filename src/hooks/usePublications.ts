@@ -5,6 +5,7 @@ import { useRSSFeed } from '@/hooks/useRSSFeed';
 import { RSSArticle } from '@/services/rssService';
 import { distributeArticlesToClusters, ScoredArticle } from '@/services/contentScoring';
 import { politicianTweets, PoliticianTweet, getTweetsForCluster } from '@/data/mockTweets';
+import { mockDebateEvents, DebateEvent } from '@/data/mockDebateEvents';
 
 // ─── Types ─────────────────────────────────────────
 export interface FeedCluster {
@@ -12,6 +13,7 @@ export interface FeedCluster {
     publications: Publication[];
     news: RSSArticle[];
     tweets: PoliticianTweet[];
+    events: DebateEvent[];
     totalContributions: number;
     isTrending: boolean;
     isFavorite: boolean;
@@ -96,23 +98,33 @@ export function usePublications() {
             }
         }
 
+        // Group DebateEvents by theme
+        const eventsGrouped: Record<string, DebateEvent[]> = {};
+        mockDebateEvents.forEach(evt => {
+            if (!eventsGrouped[evt.theme]) eventsGrouped[evt.theme] = [];
+            eventsGrouped[evt.theme].push(evt);
+        });
+
         // Build clusters
         const allTags = [...new Set([
             ...trendingTopics,
             ...Object.keys(grouped),
             ...Object.keys(newsGrouped),
+            ...Object.keys(eventsGrouped),
         ])];
 
         const buildCluster = (tag: string): FeedCluster => {
             const pubs = grouped[tag] || [];
             const news = newsGrouped[tag] || [];
             const tweets = getTweetsForCluster(tag);
+            const events = eventsGrouped[tag] || [];
             return {
                 tag,
                 publications: pubs,
                 news,
                 tweets,
-                totalContributions: pubs.length + news.length + tweets.length,
+                events,
+                totalContributions: pubs.length + news.length + tweets.length + events.length,
                 isTrending: tag === trendingTopic && !activeFilter,
                 isFavorite: userFavoriteTopics.includes(tag),
             };

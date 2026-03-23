@@ -70,6 +70,7 @@ const ActuView: React.FC = () => {
                 publications={cluster.publications}
                 news={cluster.news}
                 tweets={cluster.tweets}
+                events={cluster.events}
                 isTrending={cluster.isTrending}
                 isFavorite={cluster.isFavorite}
                 onSupport={handleSupport}
