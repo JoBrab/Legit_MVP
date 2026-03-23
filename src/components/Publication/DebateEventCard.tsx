@@ -45,8 +45,10 @@ const DebateEventCard: React.FC<Props> = ({ event }) => {
             <div className="flex items-start gap-2 text-white/90">
               <Users className="w-4 h-4 mt-0.5 flex-shrink-0 text-white/70" />
               <div className="flex flex-col gap-0.5">
-                {event.speakers.map((speaker, idx) => (
-                  <span key={idx} className="text-xs font-medium">{speaker}</span>
+                {event.speakers?.map((speaker, idx) => (
+                  <span key={idx} className="text-xs font-medium">
+                    {typeof speaker === 'string' ? speaker : speaker.name}
+                  </span>
                 ))}
               </div>
             </div>
