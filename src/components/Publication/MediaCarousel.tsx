@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { ExternalLink, Newspaper, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RSSArticle } from '@/services/rssService';
+import { Card } from '@/components/ui/card';
+import RoleBadge from '@/components/ui/RoleBadge';
 
 interface MediaCarouselProps {
     articles: RSSArticle[];
@@ -68,115 +70,64 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({ articles, tag }) => {
                         const sourceInitial = article.source ? article.source.charAt(0).toUpperCase() : 'N';
                         
                         return (
-                            <a
+                            <Card
                                 key={`${article.url}-${idx}`}
-                                href={article.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="relative flex-shrink-0 snap-start bg-zinc-900 rounded-2xl overflow-hidden shadow-md group border border-white/10"
-                                style={{ width: '75vw', maxWidth: '300px' }}
+                                className="flex-shrink-0 snap-center w-[85vw] max-w-[320px] p-3 space-y-3 glass-card overflow-hidden"
                             >
-                                {/* Aspect Ratio Container (4:5) */}
-                                <div className="relative w-full" style={{ paddingBottom: '125%' }}>
-                                    
-                                    {/* Layer 1 - Background Image */}
-                                    {article.image && (
-                                        <div className="absolute inset-0 w-full h-full">
-                                            <img
-                                                src={article.image}
-                                                alt={article.title}
-                                                className={cn(
-                                                    "w-full h-full object-cover object-center-top transition-transform duration-500 group-hover:scale-105",
-                                                    isLong ? "blur-[12px] scale-110 object-center" : ""
-                                                )}
-                                            />
-                                            {/* Sub-layer for secondary cards: darker uniform overlay */}
-                                            {isLong && <div className="absolute inset-0 bg-black/75"></div>}
+                                {/* 1. Profile Header */}
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white text-sm font-bold shadow-sm"
+                                        style={{ background: 'linear-gradient(90deg, #b80050, #5400a8)' }}
+                                    >
+                                        {sourceInitial}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="font-semibold text-foreground text-base truncate">
+                                                {article.source || 'Média'}
+                                            </span>
+                                            <RoleBadge role="Press" isVerified={true} size="sm" />
                                         </div>
-                                    )}
-
-                                    {!article.image && (
-                                        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
-                                            <Newspaper className="w-12 h-12 text-white/20" />
-                                        </div>
-                                    )}
-
-                                    {/* Layer 2 - Glassmorphism Overlay (only for short content) */}
-                                    {!isLong && (
-                                        <div 
-                                            className="absolute inset-0 w-full h-full pointer-events-none"
-                                            style={{
-                                                background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.85) 100%)'
-                                            }}
-                                        />
-                                    )}
-
-                                    {/* Layer 3 - Content Overlay */}
-                                    <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                                        
-                                        {/* Top bar: Source + Tag */}
-                                        <div className="flex items-start justify-between gap-2">
-                                            {/* Top Left: Source Avatar & Info */}
-                                            {isLong ? (
-                                                <div className="w-full text-center mt-2">
-                                                    <span className="text-white/60 text-xs font-semibold uppercase tracking-wider">{article.source}</span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
-                                                        style={{ background: 'linear-gradient(90deg, #b80050, #5400a8)' }}
-                                                    >
-                                                        {sourceInitial}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-semibold text-white leading-tight shadow-sm drop-shadow-md">
-                                                            {article.source}
-                                                        </span>
-                                                        <span className="text-[10px] text-white/70">
-                                                            {formatDateRelative(article.published_at)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Top Right: Hashtag Badge (only on short cards or if we want it on both) */}
-                                            {!isLong && (
-                                                <div 
-                                                    className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white shadow-sm whitespace-nowrap"
-                                                    style={{ background: 'linear-gradient(90deg, #b80050, #5400a8)' }}
-                                                >
-                                                    #{tag}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Bottom Content */}
-                                        <div className="mt-auto">
-                                            {isLong ? (
-                                                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 pt-10 pb-6 px-2">
-                                                    <p className="text-sm text-white/90 leading-relaxed font-medium">
-                                                        {article.description.length > 200 
-                                                            ? `${article.description.substring(0, 200)}...` 
-                                                            : article.description}
-                                                    </p>
-                                                    <div className="text-xs text-white/80 font-semibold flex items-center gap-1 mt-auto pt-4 group-hover:text-white transition-colors">
-                                                        Lire la suite <ArrowRight className="w-3.5 h-3.5" />
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <h3 className="text-sm font-bold text-white line-clamp-3 mb-3 leading-snug drop-shadow-md">
-                                                        {article.title}
-                                                    </h3>
-                                                    <div className="flex items-center text-xs text-white/80 font-medium group-hover:text-white transition-colors drop-shadow-sm">
-                                                        Lire l'article <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
+                                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                            {formatDateRelative(article.published_at)} • #{tag}
+                                        </span>
                                     </div>
                                 </div>
-                            </a>
+
+                                {/* 2. Image Container (DebateEventCard style) */}
+                                <a
+                                    href={article.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="relative flex flex-col justify-end w-full aspect-[4/5] rounded-2xl overflow-hidden group border border-border/10 cursor-pointer shadow-sm bg-zinc-900"
+                                >
+                                    {/* Image Base */}
+                                    {article.image ? (
+                                        <img
+                                            src={article.image}
+                                            alt={article.title}
+                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+                                            <Newspaper className="w-16 h-16 text-white/10" />
+                                        </div>
+                                    )}
+
+                                    {/* Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
+
+                                    {/* Content */}
+                                    <div className="relative z-10 p-4 w-full">
+                                        <h3 className="text-[20px] font-bold text-white leading-tight drop-shadow-md mb-3 line-clamp-4">
+                                            {article.title}
+                                        </h3>
+                                        <div className="flex items-center text-xs text-white/80 font-medium group-hover:text-white transition-colors">
+                                            Lire l'article <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                                        </div>
+                                    </div>
+                                </a>
+                            </Card>
                         );
                     })}
                 </div>
