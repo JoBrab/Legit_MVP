@@ -1,0 +1,37 @@
+
+> vite_react_shadcn_ts@0.0.0 build
+> vite build
+
+vite v5.4.19 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+warn - The class `duration-[300ms]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `duration-&lsqb;300ms&rsqb;` to silence this warning.
+
+warn - The class `duration-[400ms]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `duration-&lsqb;400ms&rsqb;` to silence this warning.
+✓ 1786 modules transformed.
+x Build failed in 1.65s
+error during build:
+src/components/Debate/DebateStoryBar.tsx (2:22): "upcomingDebates" is not exported by "src/data/mockDebateEvents.ts", imported by "src/components/Debate/DebateStoryBar.tsx".
+file: /Users/jobrab/Documents/Legit./Test sites et applis/Legit_MVP/src/components/Debate/DebateStoryBar.tsx:2:22
+
+1: import React, { useState } from 'react';
+2: import { DebateEvent, upcomingDebates } from '@/data/mockDebateEvents';
+                         ^
+3: import DebateEventModal from './DebateEventModal';
+4: import { Beer } from 'lucide-react';
+
+    at getRollupError (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/parseAst.js:395:41)
+    at error (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/parseAst.js:391:42)
+    at Module.error (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:15535:16)
+    at Module.traceVariable (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:15984:29)
+    at ModuleScope.findVariable (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:13770:39)
+    at ReturnValueScope.findVariable (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:5252:38)
+    at FunctionBodyScope.findVariable (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:5252:38)
+    at MemberExpression.bind (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:6891:49)
+    at BinaryExpression.bind (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:2855:23)
+    at IfStatement.bind (file:///Users/jobrab/Documents/Legit./Test%20sites%20et%20applis/Legit_MVP/node_modules/rollup/dist/es/shared/node-entry.js:2855:23)
