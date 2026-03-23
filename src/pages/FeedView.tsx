@@ -150,7 +150,7 @@ const FeedView: React.FC = () => {
   const isDragging = useRef(false);
   const lastSwipeTime = useRef(0);
 
-  // ─── Initialize YouTube API & create players ───
+  // ─── Initialize YouTube API & create players (only current + next) ───
   useEffect(() => {
     let mounted = true;
 
@@ -158,9 +158,8 @@ const FeedView: React.FC = () => {
       await loadYouTubeAPI();
       if (!mounted) return;
 
-      // Create players for current ± 1 videos
+      // Only create players for current and next video (performance)
       const indicesToLoad = [
-        currentIndex - 1,
         currentIndex,
         currentIndex + 1,
       ].filter(i => i >= 0 && i < videoItems.length);
@@ -189,7 +188,7 @@ const FeedView: React.FC = () => {
             playsinline: 1,
             loop: 1,
             playlist: video.youtubeId,
-            mute: 1, // Always start muted for autoplay
+            mute: 1,
             disablekb: 1,
             iv_load_policy: 3,
             origin: window.location.origin,
@@ -200,7 +199,6 @@ const FeedView: React.FC = () => {
               playersRef.current[video.id] = event.target;
               setPlayersReady(prev => ({ ...prev, [video.id]: true }));
 
-              // If this is the current video, play it
               if (idx === currentIndex) {
                 event.target.playVideo();
               }
@@ -215,9 +213,19 @@ const FeedView: React.FC = () => {
           },
         });
       }
+
+      // Destroy players that are > 2 positions away to free memory
+      videoItems.forEach((video, idx) => {
+        if (Math.abs(idx - currentIndex) > 2 && playersRef.current[video.id]) {
+          try {
+            playersRef.current[video.id].destroy();
+          } catch (e) { /* already destroyed */ }
+          delete playersRef.current[video.id];
+          setPlayersReady(prev => { const n = { ...prev }; delete n[video.id]; return n; });
+        }
+      });
     };
 
-    // Small delay to ensure DOM is ready
     const timer = setTimeout(init, 100);
     return () => {
       mounted = false;
@@ -338,18 +346,19 @@ const FeedView: React.FC = () => {
                   willChange: 'transform',
                 }}
               >
-                {/* YouTube Player Container */}
+                {/* YouTube Player Container — no scale, uses overflow-hidden + aspect-ratio */}
                 <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
                   {isNearCurrent ? (
                     <div
-                      id={`yt-player-${video.id}`}
-                      className="w-full h-full"
-                      style={{
-                        // Scale up to cover the container (hides black bars)
-                        transform: 'scale(1.5)',
-                        pointerEvents: 'none',
-                      }}
-                    />
+                      className="w-full h-full overflow-hidden"
+                      style={{ aspectRatio: '9/16' }}
+                    >
+                      <div
+                        id={`yt-player-${video.id}`}
+                        className="w-full h-full"
+                        style={{ pointerEvents: 'none' }}
+                      />
+                    </div>
                   ) : (
                     <div className="w-full h-full bg-black" />
                   )}

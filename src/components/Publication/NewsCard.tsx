@@ -31,7 +31,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
   }
 
   return (
-    <Card className="p-0 overflow-hidden bg-card border border-border/30 shadow-sm rounded-2xl transition-all hover:shadow-md group">
+    <Card className="p-0 overflow-hidden glass-card transition-all hover:shadow-md group">
       <a
         href={article.url}
         target="_blank"
@@ -40,7 +40,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
       >
         {/* Image */}
         {article.image ? (
-          <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+          <div className="relative h-48 w-auto m-2 rounded-[12px] overflow-hidden bg-gradient-to-br from-muted to-muted/50">
             <img
               src={article.image}
               alt={article.title}
@@ -49,8 +49,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
                 const parent = (e.target as HTMLImageElement).parentElement;
                 if (parent) {
                   parent.innerHTML = `
-                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                      <svg class="w-12 h-12 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#E91E63]/15 to-[#5400a8]/15">
+                      <svg class="w-12 h-12 text-[#5400a8]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                       </svg>
                     </div>
@@ -60,8 +60,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
             />
           </div>
         ) : (
-          <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-            <Newspaper className="w-10 h-10 text-muted-foreground/25" />
+          <div className="relative h-32 w-auto m-2 rounded-[12px] overflow-hidden bg-gradient-to-br from-[#E91E63]/15 to-[#5400a8]/15 flex items-center justify-center">
+            <Newspaper className="w-10 h-10 text-[#5400a8]/40" />
           </div>
         )}
 
@@ -79,13 +79,13 @@ const NewsCard: React.FC<NewsCardProps> = ({ article }) => {
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-foreground text-[15px] leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-foreground text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
             {article.title}
           </h3>
 
           {/* Description */}
           {article.description && (
-            <p className="text-sm text-muted-foreground/80 line-clamp-3 leading-relaxed">
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
               {article.description}
             </p>
           )}

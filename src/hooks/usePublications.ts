@@ -170,27 +170,20 @@ export function usePublications() {
         clusterCache.current = null;
     }, []);
 
-    // Handle support action
+    // Handle support action — uses ref to avoid re-rendering the entire feed
+    const supportRef = useRef<Record<string, number>>({});
+
     const handleSupport = useCallback((publicationId: string) => {
-        setPublications(prev =>
-            prev.map(pub =>
-                pub.id === publicationId ? { ...pub, supportCount: pub.supportCount + 1 } : pub
-            )
-        );
+        // Store in ref (no re-render of parent) — the PublicationCard tracks its own state
+        supportRef.current[publicationId] = (supportRef.current[publicationId] || 0) + 1;
     }, []);
 
-    // Handle reaction
+    // Handle reaction — uses ref to avoid re-rendering the entire feed
+    const userReactionsRef = useRef<Record<string, AgreementLevel>>({});
+
     const handleReaction = useCallback((publicationId: string, level: AgreementLevel) => {
-        setPublications(prev =>
-            prev.map(pub => {
-                if (pub.id === publicationId) {
-                    const newReactions = { ...pub.reactions };
-                    newReactions[level] = (newReactions[level] || 0) + 1;
-                    return { ...pub, reactions: newReactions };
-                }
-                return pub;
-            })
-        );
+        // Store in ref (no re-render of parent) — the PublicationCard manages its own local reaction state
+        userReactionsRef.current[publicationId] = level;
     }, []);
 
     return {

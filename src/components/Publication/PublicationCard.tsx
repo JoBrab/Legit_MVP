@@ -62,7 +62,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
 
   return (
     <>
-      <Card className="p-4 space-y-3 border border-border/30 shadow-sm rounded-2xl bg-card transition-all duration-200">
+      <Card className="p-4 space-y-3 glass-card transition-all duration-200">
         {/* Warning Messages */}
         {publication.warningType === 'hate-speech' && (
           <div className="flex items-center gap-2 p-2 bg-destructive/10 border border-destructive/30 rounded-xl">
@@ -94,7 +94,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-foreground text-[15px] truncate">
+              <span className="font-semibold text-[#1a1a1a] text-base truncate">
                 {publication.author.displayName}
               </span>
               <RoleBadge role={publication.author.role} isVerified={publication.author.isVerified} size="sm" />
@@ -103,7 +103,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
                 return position ? <PositionBadge label={position.label} variant={position.variant} /> : null;
               })()}
             </div>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-[#888888]">
               {formatTimeAgo(publication.createdAt)}
             </span>
           </div>
@@ -118,7 +118,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
                 shouldTruncate && !isContentExpanded ? 'max-h-[5.5em]' : 'max-h-[2000px]'
               )}
             >
-              <p className="text-foreground leading-relaxed text-[15px]">
+              <p className="text-foreground leading-relaxed text-base">
                 {highlightKeywords(content, publication.hashtags)}
               </p>
             </div>
@@ -134,8 +134,8 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
 
           {/* Poll Results */}
           {publication.type === 'poll' && (
-            <div className="bg-muted/40 rounded-2xl p-4 space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Résultats du sondage • 330 participants</p>
+            <div className="glass-card bg-white/40 p-4 space-y-3 rounded-2xl">
+              <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide">Résultats du sondage • 330 participants</p>
               {[
                 { label: 'Taxer les hauts revenus', pct: 57 },
                 { label: 'Réduire les dépenses publiques', pct: 22 },
@@ -185,22 +185,22 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
           <button
             onClick={() => { triggerHaptic('light'); setShowReactionBar(!showReactionBar); }}
             className={cn(
-              'flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl transition-all duration-200 min-h-[40px]',
+              'flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl transition-all duration-200 min-h-[48px]',
               showReactionBar || hasReacted
                 ? 'text-primary bg-primary/10'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
             )}
           >
-            <SmilePlus className="w-4 h-4" />
+            <SmilePlus className="w-5 h-5" />
             Réagir
           </button>
 
           {/* CENTER/RIGHT: Commenter */}
           <button
             onClick={() => { triggerHaptic('light'); setShowComments(true); }}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-xl transition-all duration-200 min-h-[40px]"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-xl transition-all duration-200 min-h-[48px]"
           >
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="w-5 h-5" />
             {commentCount}
           </button>
 
@@ -208,20 +208,28 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
           {showApprofondirButton && (
             <button
               onClick={() => { triggerHaptic('light'); setShowApprofondir(true); }}
-              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-xl transition-all duration-200 min-h-[40px] ml-auto"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-xl transition-all duration-200 min-h-[48px] ml-auto"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-5 h-5" />
               Approfondir
             </button>
           )}
         </div>
 
-        {/* Reaction Bar — revealed by Réagir button */}
-        {showReactionBar && (
-          <div className="animate-in slide-in-from-bottom-2 duration-200">
-            <ReactionBar reactions={publication.reactions} userReaction={userReaction} onReact={handleReaction} />
+        {/* Reaction Bar — always in DOM, animated with CSS grid for zero layout shift */}
+        <div
+          className="grid transition-all duration-300 ease-in-out"
+          style={{ gridTemplateRows: showReactionBar ? '1fr' : '0fr' }}
+        >
+          <div className={cn(
+            'overflow-hidden min-h-0 transition-opacity duration-300',
+            showReactionBar ? 'opacity-100' : 'opacity-0'
+          )}>
+            <div className="pt-1">
+              <ReactionBar reactions={publication.reactions} userReaction={userReaction} onReact={handleReaction} />
+            </div>
           </div>
-        )}
+        </div>
       </Card>
 
       <CommentsDrawer open={showComments} onClose={() => setShowComments(false)} publication={publication} />

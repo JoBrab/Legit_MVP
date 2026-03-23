@@ -38,7 +38,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <div className="max-w-screen-xl mx-auto px-4">
             <div className={cn(
               "flex items-center justify-around",
-              isFeed ? "h-12" : "h-14"
+              isFeed ? "h-14" : "h-16"
             )}>
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -49,7 +49,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 relative',
+                      'flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 relative min-w-[48px] min-h-[48px]',
                       isFeed
                         ? isActive
                           ? 'text-white'

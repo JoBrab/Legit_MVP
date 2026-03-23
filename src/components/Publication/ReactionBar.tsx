@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AgreementLevel } from '@/types';
 import { cn } from '@/lib/utils';
+import { triggerHaptic } from '@/utils/haptics';
 
 interface ReactionBarProps {
   reactions: Record<AgreementLevel, number>;
@@ -8,95 +9,94 @@ interface ReactionBarProps {
   onReact: (level: AgreementLevel) => void;
 }
 
-const ReactionBar: React.FC<ReactionBarProps> = ({ reactions, userReaction, onReact }) => {
-  const [showGauge, setShowGauge] = useState(false);
-  
-  // Reversed: 5 is now "d'accord" (left), 1 is "pas d'accord" (right)
-  const levels: AgreementLevel[] = [5, 4, 3, 2, 1];
-  const labels = ["D'accord", "Plutôt oui", 'Neutre', "Plutôt non", "Pas d'accord"];
-  const shortLabels = ["👍", "✓", "~", "✗", "👎"];
-  
-  const borderColors = [
-    'border-[hsl(142,76%,36%)] text-[hsl(142,76%,36%)]',
-    'border-[hsl(142,71%,45%)] text-[hsl(142,71%,45%)]',
-    'border-[hsl(45,93%,47%)] text-[hsl(45,93%,47%)]',
-    'border-[hsl(25,95%,53%)] text-[hsl(25,95%,53%)]',
-    'border-[hsl(0,84%,60%)] text-[hsl(0,84%,60%)]',
-  ];
-  
-  const activeBorderColors = [
-    'border-[hsl(142,76%,36%)] text-white bg-[hsl(142,76%,36%)]',
-    'border-[hsl(142,71%,45%)] text-white bg-[hsl(142,71%,45%)]',
-    'border-[hsl(45,93%,47%)] text-white bg-[hsl(45,93%,47%)]',
-    'border-[hsl(25,95%,53%)] text-white bg-[hsl(25,95%,53%)]',
-    'border-[hsl(0,84%,60%)] text-white bg-[hsl(0,84%,60%)]',
-  ];
-  
-  const gaugeColors = [
-    'hsl(142,76%,36%)',
-    'hsl(142,71%,45%)',
-    'hsl(45,93%,47%)',
-    'hsl(25,95%,53%)',
-    'hsl(0,84%,60%)',
-  ];
+const ReactionBar: React.FC<ReactionBarProps> = React.memo(({ reactions, userReaction, onReact }) => {
+  // We manage an internal state to ensure instant UI feedback and avoid parent render delays if any,
+  // though the userReaction prop will eventually sync it.
+  const [internalSelection, setInternalSelection] = useState<AgreementLevel | undefined>(userReaction);
 
-  const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
+  useEffect(() => {
+    setInternalSelection(userReaction);
+  }, [userReaction]);
 
-  const [animating, setAnimating] = useState<AgreementLevel | null>(null);
+  const levels: AgreementLevel[] = [1, 2, 3, 4, 5]; // Note: Left to right: Pas d'accord -> D'accord
+  const labels = ["Pas d'accord", "Plutôt non", 'Neutre', "Plutôt oui", "D'accord"];
 
-  const handleReact = (level: AgreementLevel) => {
-    setAnimating(level);
-    setTimeout(() => setAnimating(null), 300);
-    onReact(level);
-    setShowGauge(true);
+  const handleReact = (e: React.MouseEvent, level: AgreementLevel) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (internalSelection !== level) {
+      triggerHaptic('medium');
+      setInternalSelection(level);
+      onReact(level);
+    }
+  };
+
+  // Calculate cursor position (percentage)
+  const getCursorLeftPosition = () => {
+    if (!internalSelection) return null;
+    const index = levels.indexOf(internalSelection);
+    return `${(index / 4) * 100}%`;
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-1.5">
-        {levels.map((level, index) => (
-          <button
-            key={level}
-            onClick={() => handleReact(level)}
-            className={cn(
-            'flex-1 py-1.5 px-1 rounded-lg text-[10px] sm:text-[11px] font-medium transition-all duration-200 ease-in-out bg-background border-2 min-h-[44px]',
-              userReaction === level ? activeBorderColors[index] : borderColors[index],
-              userReaction === level && 'scale-105 font-semibold shadow-md',
-              animating === level && 'scale-[1.2]',
-              'hover:scale-105 active:scale-95'
-            )}
-            title={labels[index]}
+    <div className="w-full flex flex-col justify-center h-[60px] select-none" onClick={(e) => e.stopPropagation()}>
+      {/* Container for the gradient bar and cursor */}
+      <div className="relative w-full h-2 mb-3">
+        {/* Gradient Background Bar */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: 'linear-gradient(90deg, #E53935 0%, #FB8C00 25%, #9E9E9E 50%, #66BB6A 75%, #43A047 100%)'
+          }}
+        />
+
+        {/* Clickable Overlay Segments */}
+        <div className="absolute inset-x-[-10px] inset-y-[-16px] flex z-10">
+          {levels.map((level) => (
+            <button
+              key={level}
+              className="flex-1 h-full cursor-pointer focus:outline-none"
+              onClick={(e) => handleReact(e, level)}
+              aria-label={labels[levels.indexOf(level)]}
+            />
+          ))}
+        </div>
+
+        {/* Selected Cursor */}
+        {internalSelection && (
+          <div 
+            className="absolute top-1/2 -ml-[10px] w-[20px] h-[20px] bg-white rounded-full shadow-md z-20 pointer-events-none"
+            style={{
+              left: getCursorLeftPosition() || '50%',
+              marginTop: '-10px',
+              transition: 'left 200ms cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+            }}
+          />
+        )}
+      </div>
+
+      {/* Labels */}
+      <div className="flex justify-between w-full px-1">
+        {labels.map((label, index) => (
+          <div 
+            key={index} 
+            className="flex-1 text-center"
+            style={{
+              // Align first to left, last to right, others center approx
+              textAlign: index === 0 ? 'left' : index === 4 ? 'right' : 'center',
+            }}
           >
-            <span className="hidden sm:inline">{labels[index]}</span>
-            <span className="sm:hidden">{shortLabels[index]}</span>
-          </button>
+            <span className={cn(
+              "text-xs transition-colors duration-200",
+              internalSelection === levels[index] ? "font-semibold text-[#1a1a1a]" : "text-[#888888] font-medium"
+            )}>
+              {label}
+            </span>
+          </div>
         ))}
       </div>
-      
-      {showGauge && totalReactions > 0 && (
-        <div className="h-1.5 rounded-full overflow-hidden flex bg-muted/30">
-          {levels.map((level, index) => {
-            const count = reactions[level] || 0;
-            const percentage = totalReactions > 0 ? (count / totalReactions) * 100 : 0;
-            
-            if (percentage === 0) return null;
-            
-            return (
-              <div
-                key={level}
-                className="h-full transition-all duration-500"
-                style={{ 
-                  width: `${percentage}%`,
-                  backgroundColor: gaugeColors[index]
-                }}
-                title={`${labels[index]}: ${count} (${percentage.toFixed(0)}%)`}
-              />
-            );
-          })}
-        </div>
-      )}
     </div>
   );
-};
+});
 
 export default ReactionBar;

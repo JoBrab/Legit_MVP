@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Publication } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import PublicationCard from './PublicationCard';
-import NewsCard from './NewsCard';
 import ConversationThread from './ConversationThread';
 import TweetEmbed from './TweetEmbed';
 import InterpellationCarousel from './InterpellationCarousel';
+import MediaCarousel from './MediaCarousel';
 import { PoliticianTweet } from '@/data/mockTweets';
 import { Search } from 'lucide-react';
 import { triggerHaptic } from '@/utils/haptics';
@@ -14,7 +14,6 @@ import { triggerHaptic } from '@/utils/haptics';
 type FeedItem =
     | { type: 'standalone'; publication: Publication }
     | { type: 'thread'; origin: Publication; replies: Publication[] }
-    | { type: 'news'; article: any }
     | { type: 'tweet'; tweet: PoliticianTweet };
 
 interface FeedClusterProps {
@@ -73,12 +72,7 @@ function buildFeedItems(
         }
     }
 
-    // 2. Add news articles
-    news.forEach(article => {
-        items.push({ type: 'news', article });
-    });
-
-    // 3. Add tweet embeds
+    // 2. Add tweet embeds
     tweets.forEach(tweet => {
         items.push({ type: 'tweet', tweet });
     });
@@ -141,12 +135,15 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
                 </div>
             )}
 
-            {/* Feed Items — mixed news, tweets, publications, threads */}
+            {/* Media Carousel (News articles) */}
+            {!isFiltered && news && news.length > 0 && (
+                <MediaCarousel articles={news} tag={tag} />
+            )}
+
+            {/* Feed Items — mixed tweets, publications, threads */}
             <div className="space-y-3">
                 {visibleItems.map((item, idx) => {
                     switch (item.type) {
-                        case 'news':
-                            return <NewsCard key={`news-${tag}-${idx}`} article={item.article} />;
                         case 'tweet':
                             return <TweetEmbed key={`tweet-${item.tweet.id}`} tweet={item.tweet} />;
                         case 'thread':

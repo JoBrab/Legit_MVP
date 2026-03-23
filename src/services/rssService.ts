@@ -35,6 +35,14 @@ export const RSS_FEEDS = {
         url: 'https://www.lalibre.be/arc/outboundfeeds/rss/?outputType=xml',
         name: 'La Libre',
     },
+    lecho_politique: {
+        url: 'https://www.lecho.be/rss/politique_belgique.xml',
+        name: "L'Écho Politique",
+    },
+    lecho_economie: {
+        url: 'https://www.lecho.be/rss/politique_economie.xml',
+        name: "L'Écho Économie",
+    },
 } as const;
 
 /**

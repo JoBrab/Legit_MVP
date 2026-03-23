@@ -1,33 +1,14 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Search, Users, MessageSquare, Leaf, Train, Home,
-  GraduationCap, Heart, TrendingUp, Building2, User
-} from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, X } from 'lucide-react';
 import { triggerHaptic } from '@/utils/haptics';
-import type { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-// Icon lookup map — replaces `import * as Icons` which pulled the entire library (~300KB)
-const iconMap: Record<string, LucideIcon> = {
-  User,
-  Users,
-  Building2,
-  GraduationCap,
-  Leaf,
-  Train,
-  Home,
-  Heart,
-  TrendingUp,
-};
-
-interface UserData {
+interface Contact {
   id: string;
   name: string;
-  role: string;
-  avatar: string;
+  role: 'Citizen' | 'Politician' | 'Press' | 'SocietyGroup' | 'Institution';
+  organization?: string;
+  isVerified: boolean;
 }
 
 interface NewConversationDialogProps {
@@ -36,133 +17,145 @@ interface NewConversationDialogProps {
   onCreateConversation: (userId: string, type: 'private' | 'thematic') => void;
 }
 
+const roleConfig: Record<string, { label: string; bg: string; text: string; avatarBg: string }> = {
+  Politician: { label: 'Politique', bg: 'bg-blue-100', text: 'text-blue-700', avatarBg: 'bg-blue-50 text-blue-600' },
+  Citizen: { label: 'Citoyen', bg: 'bg-[hsl(330,85%,93%)]', text: 'text-[hsl(330,85%,40%)]', avatarBg: 'bg-[hsl(330,85%,95%)] text-[hsl(330,85%,50%)]' },
+  Press: { label: 'Média', bg: 'bg-orange-100', text: 'text-orange-700', avatarBg: 'bg-orange-50 text-orange-600' },
+  SocietyGroup: { label: 'Société civile', bg: 'bg-violet-100', text: 'text-violet-700', avatarBg: 'bg-violet-50 text-violet-600' },
+  Institution: { label: 'Institution', bg: 'bg-emerald-100', text: 'text-emerald-700', avatarBg: 'bg-emerald-50 text-emerald-600' },
+};
+
+const contacts: Contact[] = [
+  { id: 'bouchez', name: 'Georges-Louis Bouchez', role: 'Politician', organization: 'MR', isVerified: true },
+  { id: 'magnette', name: 'Paul Magnette', role: 'Politician', organization: 'PS', isVerified: true },
+  { id: 'maouane', name: 'Rajae Maouane', role: 'Politician', organization: 'Ecolo', isVerified: true },
+  { id: 'sarah-d', name: 'Sarah D.', role: 'Citizen', isVerified: false },
+  { id: 'thomas-v', name: 'Thomas V.', role: 'Citizen', isVerified: false },
+  { id: 'yasmine-b', name: 'Yasmine B.', role: 'Citizen', isVerified: false },
+  { id: 'rtbf', name: 'RTBF Info', role: 'Press', organization: 'RTBF', isVerified: true },
+  { id: 'lesoir', name: 'Le Soir', role: 'Press', organization: 'Rossel', isVerified: true },
+  { id: 'oxfam', name: 'Oxfam Belgique', role: 'SocietyGroup', organization: 'ONG', isVerified: true },
+  { id: 'habitat', name: 'Habitat & Humanisme', role: 'SocietyGroup', organization: 'Association', isVerified: true },
+];
+
 const NewConversationDialog: React.FC<NewConversationDialogProps> = ({ open, onClose, onCreateConversation }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<'private' | 'thematic'>('private');
+  const [isVisible, setIsVisible] = useState(false);
+  const backdropRef = useRef<HTMLDivElement>(null);
 
-  const users: UserData[] = [
-    { id: '2', name: 'Marie Dubois', role: 'Citoyenne', avatar: 'User' },
-    { id: '3', name: 'Jean Martin', role: 'Citoyen', avatar: 'User' },
-    { id: '4', name: 'Sophie Laurent', role: 'Élue locale', avatar: 'Building2' },
-    { id: '5', name: 'Pierre Durand', role: 'Expert', avatar: 'GraduationCap' },
-    { id: '6', name: 'Emma Leroy', role: 'Citoyenne', avatar: 'User' },
-    { id: '7', name: 'Lucas Bernard', role: 'Militant associatif', avatar: 'Users' },
-  ];
+  // Animation on open/close
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => setIsVisible(true));
+    } else {
+      setIsVisible(false);
+    }
+  }, [open]);
 
-  const topics = [
-    { id: 'climat', name: 'Climat & Environnement', icon: 'Leaf' },
-    { id: 'transport', name: 'Mobilité', icon: 'Train' },
-    { id: 'logement', name: 'Logement', icon: 'Home' },
-    { id: 'education', name: 'Éducation', icon: 'GraduationCap' },
-    { id: 'sante', name: 'Santé', icon: 'Heart' },
-    { id: 'economie', name: 'Économie', icon: 'TrendingUp' },
-  ];
-
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleCreate = (id: string) => {
-    triggerHaptic('medium');
-    onCreateConversation(id, selectedType);
-    onClose();
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 300);
   };
 
+  const handleSelect = (contact: Contact) => {
+    triggerHaptic('medium');
+    onCreateConversation(contact.id, 'private');
+    handleClose();
+  };
+
+  const filtered = contacts.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.organization && c.organization.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    roleConfig[c.role]?.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (!open && !isVisible) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-background border-border max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">Nouvelle conversation</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Créez une conversation privée ou rejoignez un groupe thématique
-          </DialogDescription>
-        </DialogHeader>
+    <div className="fixed inset-0 z-[100]">
+      {/* Backdrop */}
+      <div
+        ref={backdropRef}
+        className={cn('absolute inset-0 bg-black/40 transition-opacity duration-300', isVisible ? 'opacity-100' : 'opacity-0')}
+        onClick={handleClose}
+      />
 
-        <div className="space-y-4">
-          {/* Type Selection */}
-          <div className="flex gap-2">
-            <Button
-              variant={selectedType === 'private' ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => {
-                triggerHaptic('light');
-                setSelectedType('private');
-              }}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Privée
-            </Button>
-            <Button
-              variant={selectedType === 'thematic' ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => {
-                triggerHaptic('light');
-                setSelectedType('thematic');
-              }}
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Thématique
-            </Button>
+      {/* Bottom Sheet */}
+      <div
+        className={cn(
+          'absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out',
+          isVisible ? 'translate-y-0' : 'translate-y-full'
+        )}
+        style={{ maxHeight: '85vh', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2">
+          <h2 className="text-lg font-semibold text-gray-900">Nouvelle conversation</h2>
+          <button
+            onClick={handleClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher par nom ou rôle..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              autoFocus
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63]/40 transition-all"
+            />
           </div>
+        </div>
 
-          {selectedType === 'private' ? (
-            <>
-              {/* Search Users */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Rechercher un utilisateur..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background border-input"
-                />
-              </div>
-
-              {/* Users List */}
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                {filteredUsers.map((user) => {
-                  const IconComponent = iconMap[user.avatar] || User;
-                  return (
-                    <button
-                      key={user.id}
-                      onClick={() => handleCreate(user.id)}
-                      className="w-full p-4 rounded-xl border border-border hover:bg-accent/5 hover:border-primary/30 transition-all duration-300 text-left flex items-center gap-4 group hover:shadow-md"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                        <IconComponent className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground truncate">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.role}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
+        {/* Contacts List */}
+        <div className="overflow-y-auto px-2" style={{ maxHeight: 'calc(85vh - 140px)' }}>
+          {filtered.length === 0 ? (
+            <p className="text-center text-sm text-gray-400 py-8">Aucun contact trouvé</p>
           ) : (
-            <div className="space-y-2">
-              {topics.map((topic) => {
-                const IconComponent = iconMap[topic.icon] || MessageSquare;
-                return (
-                  <button
-                    key={topic.id}
-                    onClick={() => handleCreate(topic.id)}
-                    className="w-full p-4 rounded-xl border border-border hover:bg-accent/5 hover:border-primary/30 transition-all duration-300 text-left flex items-center gap-4 group hover:shadow-md"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <IconComponent className="w-5 h-5 text-primary" />
+            filtered.map(contact => {
+              const cfg = roleConfig[contact.role] || roleConfig.Citizen;
+              return (
+                <button
+                  key={contact.id}
+                  onClick={() => handleSelect(contact)}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors min-h-[56px]"
+                >
+                  {/* Avatar */}
+                  <div className={cn('w-11 h-11 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0', cfg.avatarBg)}>
+                    {contact.name.charAt(0)}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[14px] font-medium text-gray-900 truncate">{contact.name}</span>
+                      <span className={cn('text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0', cfg.bg, cfg.text)}>
+                        {cfg.label}
+                      </span>
                     </div>
-                    <p className="font-semibold text-foreground">{topic.name}</p>
-                  </button>
-                );
-              })}
-            </div>
+                    {contact.organization && (
+                      <p className="text-xs text-gray-400 truncate">{contact.organization}</p>
+                    )}
+                  </div>
+                </button>
+              );
+            })
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
