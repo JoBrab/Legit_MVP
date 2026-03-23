@@ -20,7 +20,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isFeed = location.pathname === '/feed';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-transparent flex flex-col">
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-20">
         <div className="animate-fade-in">

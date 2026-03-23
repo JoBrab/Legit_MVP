@@ -133,7 +133,8 @@
   body {
     @apply text-foreground;
     background-color: #FFFFFF;
-    background-image: radial-gradient(circle at top right, rgba(84, 0, 168, 0.04) 0%, transparent 50%);
+    background-image: radial-gradient(circle at 80% 0%, rgba(233, 30, 99, 0.06) 0%, rgba(84, 0, 168, 0.04) 40%, transparent 80%);
+    background-size: 100vw 100vh;
     background-repeat: no-repeat;
     background-attachment: fixed;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -185,44 +186,46 @@
   .bg-gradient-legit-subtle {
     background: var(--gradient-legit-subtle);
   }
+}
 
-  /* ── Glassmorphism (iOS 18 inspired) ── */
-  .glass-card {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-top: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    border-radius: 20px;
-  }
+/* ── Glassmorphism (iOS 18 inspired) ── 
+   Placed outside of @layer to guarantee they are never purged
+*/
+.glass-card {
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 20px !important;
+}
 
-  .glass-dark {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    border-radius: 20px;
-  }
+.glass-dark {
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 20px !important;
+}
 
-  .glass-magenta {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: rgba(233, 30, 99, 0.9);
-  }
+.glass-magenta {
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  background: rgba(233, 30, 99, 0.9) !important;
+}
 
-  /* Legit Gradients Utility */
-  .legit-gradient {
-    background: linear-gradient(90deg, #b80050, #5400a8);
-  }
+/* Legit Gradients Utility */
+.legit-gradient {
+  background: linear-gradient(90deg, #b80050, #5400a8);
+}
 
-  .legit-gradient-text {
-    background: linear-gradient(90deg, #b80050, #5400a8);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+.legit-gradient-text {
+  background: linear-gradient(90deg, #b80050, #5400a8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 @layer utilities {

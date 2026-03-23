@@ -23,26 +23,24 @@ const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
  * Available RSS feed sources
  */
 export const RSS_FEEDS = {
-    rtbf_actu: {
-        url: 'https://rss.rtbf.be/article/rss/rtbfinfo_homepage.xml',
-        name: 'RTBF Info',
-    },
-    le_soir: {
-        url: 'https://www.lesoir.be/rss2/2/cible_principale?status=1',
-        name: 'Le Soir',
-    },
-    la_libre: {
-        url: 'https://www.lalibre.be/arc/outboundfeeds/rss/?outputType=xml',
-        name: 'La Libre',
-    },
-    lecho_politique: {
-        url: 'https://www.lecho.be/rss/politique_belgique.xml',
-        name: "L'Écho Politique",
-    },
-    lecho_economie: {
-        url: 'https://www.lecho.be/rss/politique_economie.xml',
-        name: "L'Écho Économie",
-    },
+    rtbf_actu: { url: 'https://rss.rtbf.be/article/rss/rtbfinfo_homepage.xml', name: 'RTBF Info' },
+    le_soir: { url: 'https://www.lesoir.be/rss2/2/cible_principale?status=1', name: 'Le Soir' },
+    la_libre: { url: 'https://www.lalibre.be/arc/outboundfeeds/rss/?outputType=xml', name: 'La Libre' },
+    lecho_politique: { url: 'https://www.lecho.be/rss/politique_belgique.xml', name: "L'Écho Politique" },
+    lecho_economie: { url: 'https://www.lecho.be/rss/politique_economie.xml', name: "L'Écho Économie" },
+    
+    la_chambre: { url: 'https://www.lachambre.be/kvvcr/rss.cfm', name: 'La Chambre' },
+    gouvernement_belge: { url: 'https://www.belgium.be/fr/rss/actualites', name: 'Gouvernement belge' },
+    parlement_fwb: { url: 'https://www.pfwb.be/rss', name: 'Parlement FWB' },
+    mr: { url: 'https://www.mr.be/feed/', name: 'MR' },
+    ps: { url: 'https://www.ps.be/feed/', name: 'PS' },
+    ecolo: { url: 'https://www.ecolo.be/feed/', name: 'Ecolo' },
+    les_engages: { url: 'https://www.lesengages.be/feed/', name: 'Les Engagés' },
+    ptb: { url: 'https://www.ptb.be/feed', name: 'PTB' },
+    fgtb: { url: 'https://www.fgtb.be/rss.xml', name: 'FGTB' },
+    csc: { url: 'https://www.csc-en-ligne.be/rss.xml', name: 'CSC' },
+    greenpeace: { url: 'https://www.greenpeace.org/belgium/fr/feed/', name: 'Greenpeace BE' },
+    amnesty: { url: 'https://www.amnesty.be/feed', name: 'Amnesty BE' },
 } as const;
 
 /**

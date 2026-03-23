@@ -41,45 +41,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Leaf, Heart, Train, Home, Landmark, TrendingUp, Users
 };
 
-const channels: ChannelItem[] = [
-  { id: '1', name: 'Climat & Environnement', type: 'canal', icon: 'Leaf', memberCount: 1247, pendingCount: 3, topic: 'Climat', description: 'Discussions sur le climat, la transition énergétique et les politiques environnementales en Belgique.', isFavorite: true },
-  { id: '2', name: 'Mobilité Durable', type: 'canal', icon: 'Train', memberCount: 892, pendingCount: 1, topic: 'Mobilité', description: 'Transport public, vélo, Good Move et alternatives à la voiture.' },
-  { id: '3', name: 'Santé & Bien-être', type: 'canal', icon: 'Heart', memberCount: 534, pendingCount: 2, topic: 'Santé', description: 'Accès aux soins, santé mentale et réformes du système de santé.' },
-  { id: '4', name: 'Logement Abordable', type: 'canal', icon: 'Home', memberCount: 678, pendingCount: 0, topic: 'Logement', description: 'Crise du logement, loyers, logement social et urbanisme.', isFavorite: true },
-  { id: '5', name: 'Budget Participatif', type: 'canal', icon: 'Landmark', memberCount: 423, pendingCount: 1, topic: 'Budget', description: 'Suivi du budget fédéral et des finances publiques.' },
-  { id: '6', name: 'Quartier Ixelles', type: 'communaute', icon: 'Users', memberCount: 312, pendingCount: 0, description: 'Communauté des habitants du quartier Ixelles.' },
-  { id: '7', name: 'Infirmiers Bruxelles', type: 'communaute', icon: 'Users', memberCount: 189, pendingCount: 2, description: 'Réseau professionnel des infirmiers de la région bruxelloise.' },
-  { id: '8', name: 'Communauté Marocaine BXL', type: 'communaute', icon: 'Users', memberCount: 567, pendingCount: 0, description: 'Espace d\'échange pour la communauté marocaine de Bruxelles.', isFavorite: true },
-];
-
-const suggestedUsers: SuggestedUser[] = [
-  { id: 's1', name: 'Elke Van den Brandt', role: 'Politician', isVerified: true, organization: 'Groen', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&crop=face' },
-  { id: 's2', name: 'RTBF Info', role: 'Press', isVerified: true, organization: 'RTBF', avatar: 'https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=80&h=80&fit=crop&crop=center' },
-  { id: 's3', name: 'Sophie L.', role: 'Citizen', isVerified: false, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face', engagementScore: 78 },
-  { id: 's4', name: 'Paul Magnette', role: 'Politician', isVerified: true, organization: 'PS', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face' },
-  { id: 's5', name: 'Oxfam Belgique', role: 'SocietyGroup', isVerified: true, organization: 'ONG', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&crop=face' },
-];
-
-const activePoliticians: SuggestedUser[] = [
-  { id: 'p1', name: 'Georges-Louis Bouchez', role: 'Politician', isVerified: true, organization: 'MR', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face' },
-  { id: 'p2', name: 'Paul Magnette', role: 'Politician', isVerified: true, organization: 'PS', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face' },
-  { id: 'p3', name: 'Elke Van den Brandt', role: 'Politician', isVerified: true, organization: 'Groen', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&crop=face' },
-];
-
-const verifiedMedia: SuggestedUser[] = [
-  { id: 'm1', name: 'Le Soir', role: 'Press', isVerified: true, organization: 'Presse', avatar: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=80&h=80&fit=crop&crop=center' },
-  { id: 'm2', name: 'RTBF Info', role: 'Press', isVerified: true, organization: 'Audiovisuel', avatar: 'https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=80&h=80&fit=crop&crop=center' },
-  { id: 'm3', name: 'La Libre', role: 'Press', isVerified: true, organization: 'Presse', avatar: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=80&h=80&fit=crop&crop=center' },
-  { id: 'm4', name: 'BX1', role: 'Press', isVerified: true, organization: 'TV locale', avatar: 'https://images.unsplash.com/photo-1590502593747-42a996133562?w=80&h=80&fit=crop&crop=center' },
-];
-
-const topCitizens: SuggestedUser[] = [
-  { id: 'c1', name: 'Sarah D.', role: 'Citizen', isVerified: false, engagementScore: 92, rank: 1, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face' },
-  { id: 'c2', name: 'Amina K.', role: 'Citizen', isVerified: false, engagementScore: 87, rank: 2, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&crop=face' },
-  { id: 'c3', name: 'Thomas V.', role: 'Citizen', isVerified: false, engagementScore: 81, rank: 3, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face' },
-  { id: 'c4', name: 'Pierre D.', role: 'Citizen', isVerified: false, engagementScore: 76, rank: 4, avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&h=80&fit=crop&crop=face' },
-  { id: 'c5', name: 'Marie L.', role: 'Citizen', isVerified: false, engagementScore: 72, rank: 5, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face' },
-];
+const channels: ChannelItem[] = [];
+const suggestedUsers: SuggestedUser[] = [];
+const activePoliticians: SuggestedUser[] = [];
+const verifiedMedia: SuggestedUser[] = [];
+const topCitizens: SuggestedUser[] = [];
 
 type NetworkTab = 'suggestions' | 'following' | 'followers';
 type ChannelFilter = 'all' | 'canaux' | 'communautes' | 'unread' | 'favorites';

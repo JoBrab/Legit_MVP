@@ -31,27 +31,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Leaf, Heart, Train, Home, Landmark, TrendingUp, Users
 };
 
-const mockMembers = [
-  { id: '1', name: 'Sarah D.', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face' },
-  { id: '2', name: 'Jean M.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face' },
-  { id: '3', name: 'Amina K.', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&crop=face' },
-  { id: '4', name: 'Thomas V.', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face' },
-  { id: '5', name: 'Pierre D.', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&h=80&fit=crop&crop=face' },
-  { id: '6', name: 'Marie L.', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face' },
-  { id: '7', name: 'Sophie L.', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&crop=face' },
-  { id: '8', name: 'Lucas B.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face' },
-];
-
-const mockActivity = [
-  { id: 'a1', type: 'message' as const, author: 'Marie D.', content: 'Nouvelle proposition pour la transition énergétique locale...', time: '2h' },
-  { id: 'a2', type: 'publication' as const, author: 'Collectif Vert', content: 'Notre rapport sur les émissions de CO2 en Belgique vient d\'être publié.', time: '5h' },
-  { id: 'a3', type: 'vote' as const, author: 'Thomas V.', content: 'A voté pour "Subvention panneaux solaires"', time: '1j' },
-];
-
-const mockPendingContent = [
-  { id: 'p1', type: 'measure' as const, title: 'Subvention panneaux solaires', author: 'Collectif Énergie Verte', votesFor: 156, votesAgainst: 23, threshold: 200 },
-  { id: 'p2', type: 'video' as const, title: 'Transition énergétique à Bruxelles', author: 'Marie D.', votesFor: 89, votesAgainst: 12, threshold: 100, thumbnail: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=300' },
-];
+const mockMembers: any[] = [];
+const mockActivity: any[] = [];
+const mockPendingContent: any[] = [];
 
 const ChannelDetailView: React.FC<Props> = ({ channel, onBack }) => {
   const { toast } = useToast();

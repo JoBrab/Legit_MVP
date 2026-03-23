@@ -24,46 +24,7 @@ interface CommentsDrawerProps {
   publication: Publication;
 }
 
-const MOCK_COMMENTS: Comment[] = [
-  {
-    id: 'c1',
-    author: { displayName: 'Sophie L.', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face', role: 'Citizen', isVerified: false },
-    content: "Très bon article, merci pour cette analyse détaillée. Il manque cependant la perspective des indépendants qui sont aussi très touchés.",
-    createdAt: new Date(Date.now() - 3600000),
-    upvotes: 12,
-    userUpvoted: false,
-    replies: [
-      {
-        id: 'c1-r1',
-        author: { displayName: 'Jean Martin', role: 'Citizen', isVerified: false },
-        content: "Complètement d'accord. En tant qu'indépendant, la hausse de TVA sur l'énergie est un vrai coup dur.",
-        createdAt: new Date(Date.now() - 1800000),
-        upvotes: 5,
-        userUpvoted: false,
-        replies: [
-          {
-            id: 'c1-r1-r1',
-            author: { displayName: 'Marie B.', role: 'Politician', isVerified: true },
-            content: "Nous avons proposé un amendement pour un taux réduit pour les TPE. Il sera débattu la semaine prochaine.",
-            createdAt: new Date(Date.now() - 900000),
-            upvotes: 8,
-            userUpvoted: false,
-            replies: [],
-          }
-        ],
-      }
-    ],
-  },
-  {
-    id: 'c2',
-    author: { displayName: 'Ahmed R.', role: 'SocietyGroup', isVerified: true },
-    content: "Les chiffres cités sont confirmés par notre propre étude terrain. La situation est encore plus préoccupante dans les zones rurales.",
-    createdAt: new Date(Date.now() - 7200000),
-    upvotes: 23,
-    userUpvoted: false,
-    replies: [],
-  },
-];
+const MOCK_COMMENTS: Comment[] = [];
 
 const formatTime = (date: Date) => {
   const mins = Math.floor((Date.now() - date.getTime()) / 60000);
