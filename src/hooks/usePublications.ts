@@ -1,11 +1,12 @@
-import { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Publication, AgreementLevel } from '@/types';
 import { mockPublications, trendingTopics } from '@/data/mockPublications';
 import { useRSSFeed } from '@/hooks/useRSSFeed';
 import { RSSArticle } from '@/services/rssService';
-import { distributeArticlesToClusters, ScoredArticle } from '@/services/contentScoring';
+import { distributeArticlesToClusters, ScoredArticle, bestHashtagForArticle } from '@/services/contentScoring';
 import { politicianTweets, PoliticianTweet, getTweetsForCluster } from '@/data/mockTweets';
 import { mockDebateEvents, DebateEvent } from '@/data/mockDebateEvents';
+import { fetchBlueskyPostsFromActors, BlueskyPost } from '@/services/blueskyService';
 
 // ─── Types ─────────────────────────────────────────
 export interface FeedCluster {
@@ -14,6 +15,7 @@ export interface FeedCluster {
     news: RSSArticle[];
     tweets: PoliticianTweet[];
     events: DebateEvent[];
+    blueskyPosts: BlueskyPost[];
     totalContributions: number;
     isTrending: boolean;
     isFavorite: boolean;
@@ -40,6 +42,25 @@ export function usePublications() {
 
     // RSS feeds (all sources merged)
     const { articles: newsArticles, isLoading: loadingNews } = useRSSFeed();
+
+    // Bluesky feeds
+    const [blueskyPosts, setBlueskyPosts] = useState<BlueskyPost[]>([]);
+    const [loadingBluesky, setLoadingBluesky] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+        setLoadingBluesky(true);
+        fetchBlueskyPostsFromActors()
+            .then(posts => {
+                if (mounted) setBlueskyPosts(posts);
+            })
+            .catch(console.error)
+            .finally(() => {
+                if (mounted) setLoadingBluesky(false);
+            });
+        
+        return () => { mounted = false; };
+    }, []);
 
     // User preferences (would come from profile in production)
     const [userFavoriteTopics] = useState<string[]>(['Logement', 'Santé']);
@@ -105,12 +126,23 @@ export function usePublications() {
             eventsGrouped[evt.theme].push(evt);
         });
 
+        // Group Bluesky posts by theme
+        const bskyGrouped: Record<string, BlueskyPost[]> = {};
+        blueskyPosts.forEach(post => {
+            // We use the RSS matching logic to find the best cluster based on post content
+            const pseudoArticle = { title: '', description: post.content } as RSSArticle;
+            const bestTag = bestHashtagForArticle(pseudoArticle, 5)?.hashtag || 'Autre';
+            if (!bskyGrouped[bestTag]) bskyGrouped[bestTag] = [];
+            bskyGrouped[bestTag].push(post);
+        });
+
         // Build clusters
         const allTags = [...new Set([
             ...trendingTopics,
             ...Object.keys(grouped),
             ...Object.keys(newsGrouped),
             ...Object.keys(eventsGrouped),
+            ...Object.keys(bskyGrouped)
         ])];
 
         const buildCluster = (tag: string): FeedCluster => {
@@ -118,13 +150,16 @@ export function usePublications() {
             const news = newsGrouped[tag] || [];
             const tweets = getTweetsForCluster(tag);
             const events = eventsGrouped[tag] || [];
+            const bsky = bskyGrouped[tag] || [];
+            
             return {
                 tag,
                 publications: pubs,
                 news,
                 tweets,
                 events,
-                totalContributions: pubs.length + news.length + tweets.length + events.length,
+                blueskyPosts: bsky,
+                totalContributions: pubs.length + news.length + tweets.length + events.length + bsky.length,
                 isTrending: tag === trendingTopic && !activeFilter,
                 isFavorite: userFavoriteTopics.includes(tag),
             };
@@ -174,7 +209,7 @@ export function usePublications() {
         }
 
         return clusters;
-    }, [publications, activeFilter, newsArticles, scoredNewsByCluster, trendingTopic, userFavoriteTopics]);
+    }, [publications, activeFilter, newsArticles, scoredNewsByCluster, trendingTopic, userFavoriteTopics, blueskyPosts]);
 
     // Add a new publication
     const addPublication = useCallback((publication: Publication) => {
@@ -202,6 +237,7 @@ export function usePublications() {
         publications,
         newsArticles,
         loadingNews,
+        loadingBluesky,
         activeFilter,
         setActiveFilter,
         getClusteredFeed,

@@ -9,6 +9,8 @@ import MediaCarousel from './MediaCarousel';
 import DebateEventCard from './DebateEventCard';
 import { PoliticianTweet } from '@/data/mockTweets';
 import { DebateEvent } from '@/data/mockDebateEvents';
+import { BlueskyPost } from '@/services/blueskyService';
+import BlueskyEmbed from './BlueskyEmbed';
 import { Search } from 'lucide-react';
 import { triggerHaptic } from '@/utils/haptics';
 
@@ -17,7 +19,8 @@ type FeedItem =
     | { type: 'standalone'; publication: Publication }
     | { type: 'thread'; origin: Publication; replies: Publication[] }
     | { type: 'tweet'; tweet: PoliticianTweet }
-    | { type: 'event'; event: DebateEvent };
+    | { type: 'event'; event: DebateEvent }
+    | { type: 'bluesky'; bluesky: BlueskyPost };
 
 interface FeedClusterProps {
     tag: string;
@@ -25,6 +28,7 @@ interface FeedClusterProps {
     news: any[];
     tweets: PoliticianTweet[];
     events?: DebateEvent[];
+    blueskyPosts?: BlueskyPost[];
     isTrending: boolean;
     isFavorite: boolean;
     onSupport: (id: string) => void;
@@ -56,6 +60,7 @@ function buildFeedItems(
     news: any[],
     tweets: PoliticianTweet[],
     events: DebateEvent[],
+    blueskyPosts: BlueskyPost[],
     tag: string,
 ): FeedItem[] {
     const pubMap = new Map(publications.map(p => [p.id, p]));
@@ -82,6 +87,11 @@ function buildFeedItems(
         items.push({ type: 'tweet', tweet });
     });
 
+    // 2.5 Add bluesky embeds
+    blueskyPosts.forEach(bluesky => {
+        items.push({ type: 'bluesky', bluesky });
+    });
+
     // 3. Add debate events
     events.forEach(event => {
         items.push({ type: 'event', event });
@@ -105,6 +115,7 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
     news,
     tweets,
     events = [],
+    blueskyPosts = [],
     isTrending,
     onSupport,
     onReaction,
@@ -114,8 +125,8 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
     const [expanded, setExpanded] = useState(false);
 
     const feedItems = useMemo(
-        () => buildFeedItems(publications, news, tweets, events, tag),
-        [publications, news, tweets, events, tag]
+        () => buildFeedItems(publications, news, tweets, events, blueskyPosts, tag),
+        [publications, news, tweets, events, blueskyPosts, tag]
     );
 
     // Randomized 2-4 items in collapsed state (seeded on tag for consistency)
@@ -157,6 +168,8 @@ const FeedCluster: React.FC<FeedClusterProps> = ({
                     switch (item.type) {
                         case 'event':
                             return <DebateEventCard key={`event-${item.event.id}`} event={item.event} />;
+                        case 'bluesky':
+                            return <BlueskyEmbed key={`bluesky-${item.bluesky.id}`} post={item.bluesky} />;
                         case 'tweet':
                             return <TweetEmbed key={`tweet-${item.tweet.id}`} tweet={item.tweet} />;
                         case 'thread':
