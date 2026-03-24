@@ -36,48 +36,76 @@ export const BLUESKY_ACTORS = [
 ];
 
 export async function fetchBlueskyPostsFromActors(): Promise<BlueskyPost[]> {
-    const BSKY_PUBLIC_URL = 'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed';
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const allPosts: BlueskyPost[] = [];
 
-    // Parallel fetch is risky due to rate limits without auth, but we only have ~19 targets.
-    // Let's do batches of 5
     const batchSize = 5;
     for (let i = 0; i < BLUESKY_ACTORS.length; i += batchSize) {
         const batch = BLUESKY_ACTORS.slice(i, i + batchSize);
         await Promise.all(batch.map(async (actor) => {
             try {
-                const response = await fetch(`${BSKY_PUBLIC_URL}?actor=${actor.handle}&limit=10&filter=posts_no_replies`);
+                const feedUrl = `https://bsky.app/profile/${actor.handle}/rss`;
+                const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(feedUrl)}`;
+                
+                const response = await fetch(proxiedUrl);
                 if (!response.ok) return;
                 
-                const data = await response.json();
-                if (!data.feed) return;
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(xmlText, 'text/xml');
+                
+                const parseError = doc.querySelector('parsererror');
+                if (parseError) return;
 
-                for (const item of data.feed) {
-                    const post = item.post;
-                    // only include text posts
-                    if (!post.record || !post.record.text) continue;
+                // Attempt to extract the author avatar from the channel <image><url>
+                const channelImageUrl = doc.querySelector('channel > image > url')?.textContent?.trim() || '';
 
-                    let images: string[] = [];
-                    if (post.embed && post.embed.$type === 'app.bsky.embed.images#view') {
-                        images = post.embed.images.map((img: any) => img.thumb || img.fullsize);
-                    }
+                const items = doc.querySelectorAll('item');
+                // We only take the top 5 most recent posts from each actor to keep it light
+                const recentItems = Array.from(items).slice(0, 5);
+
+                recentItems.forEach((item) => {
+                    const title = item.querySelector('title')?.textContent?.trim() || '';
+                    const link = item.querySelector('link')?.textContent?.trim() || '';
+                    const description = item.querySelector('description')?.textContent?.trim() || '';
+                    const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+                    
+                    if (!link || !description) return;
+
+                    // Exclude pure replies (a heuristic: title starts with "Reply to")
+                    // Note: Bluesky RSS feeds typically don't have replies, but just in case
+                    if (title.startsWith('Reply to')) return;
+
+                    // Extract image from description HTML if present (<img src="...">)
+                    const imageMatch = description.match(/<img[^>]+src=["']([^"']+)["']/i);
+                    const images = imageMatch ? [imageMatch[1]] : [];
+
+                    // Clean the description to be purely text for the content
+                    const cleanContent = description
+                         .replace(/<br\s*\/?>/gi, '\n')
+                         .replace(/<[^>]*>/g, '') // Strip other HTML
+                         .trim();
+
+                    // Generate a pseudo-ID from the link
+                    const id = link.split('/').pop() || Math.random().toString();
 
                     allPosts.push({
-                        id: post.uri,
-                        url: `https://bsky.app/profile/${post.author.handle}/post/${post.uri.split('/').pop()}`,
-                        authorName: post.author.displayName || actor.name,
-                        authorHandle: `@${post.author.handle}`,
-                        authorAvatar: post.author.avatar,
-                        content: post.record.text,
-                        createdAt: post.record.createdAt,
-                        replyCount: post.replyCount || 0,
-                        repostCount: post.repostCount || 0,
-                        likeCount: post.likeCount || 0,
+                        id,
+                        url: link,
+                        authorName: actor.name,
+                        authorHandle: `@${actor.handle}`,
+                        authorAvatar: channelImageUrl,
+                        content: cleanContent,
+                        createdAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+                        // RSS does not provide engagement stats, so we zero them out for now
+                        replyCount: 0,
+                        repostCount: 0,
+                        likeCount: 0,
                         images
                     });
-                }
+                });
             } catch (e) {
-                console.warn(`Failed to fetch Bluesky feed for ${actor.handle}`);
+                console.warn(`Failed to fetch Bluesky RSS feed for ${actor.handle}`);
             }
         }));
     }
