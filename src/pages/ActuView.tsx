@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import FeedCluster from '@/components/Publication/FeedCluster';
@@ -9,6 +9,41 @@ import EmptyState from '@/components/ui/EmptyState';
 import DebateStoryBar from '@/components/Debate/DebateStoryBar';
 import { Plus } from 'lucide-react';
 import { usePublications } from '@/hooks/usePublications';
+
+// Lightweight Virtualization Wrapper
+const VirtualCluster: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const [height, setHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        } else {
+          // Save height right before unmounting to maintain scroll position
+          if (ref.current) {
+            const currentHeight = ref.current.getBoundingClientRect().height;
+            if (currentHeight > 100) setHeight(currentHeight);
+          }
+          setIsVisible(false);
+        }
+      },
+      // rootMargin: '100%' means load clusters 1 viewport above and 1 viewport below
+      { rootMargin: '100% 0px' }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} style={{ minHeight: !isVisible && height > 0 ? height : undefined }}>
+      {isVisible ? children : null}
+    </div>
+  );
+};
 
 const ActuView: React.FC = () => {
   const { user } = useAuth();
@@ -64,13 +99,14 @@ const ActuView: React.FC = () => {
       <div className="px-4 pt-2 pb-4">
         <div className="space-y-1">
           {clusters.map((cluster, idx) => (
-            <div key={cluster.tag}>
+            <VirtualCluster key={cluster.tag}>
               <FeedCluster
                 tag={cluster.tag}
                 publications={cluster.publications}
                 news={cluster.news}
                 tweets={cluster.tweets}
                 events={cluster.events}
+                blueskyPosts={cluster.blueskyPosts}
                 isTrending={cluster.isTrending}
                 isFavorite={cluster.isFavorite}
                 onSupport={handleSupport}
@@ -78,7 +114,7 @@ const ActuView: React.FC = () => {
                 isLast={idx === clusters.length - 1}
                 isFiltered={!!activeFilter && idx === 0}
               />
-            </div>
+            </VirtualCluster>
           ))}
 
           {loadingNews && (

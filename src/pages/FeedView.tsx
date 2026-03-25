@@ -20,6 +20,56 @@ interface VideoItem {
 // ─── Real Belgian media YouTube Shorts ───
 const videoItems: VideoItem[] = [];
 
+// ─── Lazy Video Item with IntersectionObserver ───
+const LazyVideoItem: React.FC<{
+  video: VideoItem;
+  index: number;
+  currentIndex: number;
+  playersBuffering: Record<number, boolean>;
+}> = ({ video, index, currentIndex, playersBuffering }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting);
+      },
+      { threshold: 0.5 }
+    );
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  const isNearCurrent = Math.abs(index - currentIndex) <= 1;
+
+  // We only show the actual iframe placeholder div if we're near current
+  return (
+    <div ref={containerRef} className="absolute inset-0 flex items-center justify-center overflow-hidden bg-black">
+      {!isNearCurrent || !inView ? (
+        <img
+          src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+          alt="Video thumbnail"
+          className="w-full h-full object-cover opacity-60"
+        />
+      ) : (
+        <div className="w-full h-full overflow-hidden" style={{ aspectRatio: '9/16' }}>
+          <div id={`yt-player-${video.id}`} className="w-full h-full" style={{ pointerEvents: 'none' }} />
+        </div>
+      )}
+
+      {/* Buffering Indicator */}
+      {playersBuffering[video.id] && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20">
+          <Loader2 className="w-10 h-10 text-white animate-spin" />
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FeedView: React.FC = () => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -234,30 +284,12 @@ const FeedView: React.FC = () => {
                   willChange: 'transform',
                 }}
               >
-                {/* YouTube Player Container — no scale, uses overflow-hidden + aspect-ratio */}
-                <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-                  {isNearCurrent ? (
-                    <div
-                      className="w-full h-full overflow-hidden"
-                      style={{ aspectRatio: '9/16' }}
-                    >
-                      <div
-                        id={`yt-player-${video.id}`}
-                        className="w-full h-full"
-                        style={{ pointerEvents: 'none' }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full h-full bg-black" />
-                  )}
-                </div>
-
-                {/* Buffering Indicator */}
-                {playersBuffering[video.id] && (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20">
-                    <Loader2 className="w-10 h-10 text-white animate-spin" />
-                  </div>
-                )}
+                <LazyVideoItem 
+                  video={video} 
+                  index={index} 
+                  currentIndex={currentIndex} 
+                  playersBuffering={playersBuffering} 
+                />
 
                 {/* Transparent Gesture Layer */}
                 <div className="absolute inset-0 z-10" />
